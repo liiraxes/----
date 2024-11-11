@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kalkulator & Belanja Resistor</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+        font-family: Arial, sans-serif;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s;
+      }
+      .card {
+        border: none;
+        margin-bottom: 20px;
+        transition: background-color 0.3s;
+      }
+      .btn-custom {
+        background-color: #4caf50;
+        color: white;
+      }
+      .btn-custom:hover {
+        background-color: #45a049;
+      }
+      #result,
+      #totalPrice {
+        font-weight: bold;
+        font-size: 1.2em;
+        margin-top: 15px;
+        text-align: center;
+      }
+      .btn-dark-mode {
+        background-color: #333;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        margin-top: 20px;
+        width: 100%;
+        cursor: pointer;
+      }
+      .btn-dark-mode:hover {
+        background-color: #555;
+      }
+
+      /* Dark Mode */
+      body.dark-mode {
+        background-color: #121212;
+        color: #ffffff;
+      }
+      .container.dark-mode {
+        background-color: #1c1c1c;
+      }
+      .card.dark-mode {
+        background-color: #333;
+      }
+      .btn-custom.dark-mode {
+        background-color: #388e3c;
+      }
+      .btn-custom.dark-mode:hover {
+        background-color: #30783b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2 class="text-center mb-4">Kalkulator & Belanja Kode Warna Resistor</h2>
+
+      <!-- Dropdown untuk memilih gelang -->
+      <div class="card p-3">
+        <h5>Pilih Resistor</h5>
+        <label for="bandCount" class="form-label">Jumlah Gelang Warna:</label>
+        <select
+          id="bandCount"
+          class="form-select"
+          onchange="updateBandInputs()"
+        >
+          <option value="3">3 Gelang - Rp 500</option>
+          <option value="4">4 Gelang - Rp 1000</option>
+          <option value="5">5 Gelang - Rp 1500</option>
+          <option value="6">6 Gelang - Rp 2000</option>
+        </select>
+      </div>
+
+      <!-- Bagian input warna gelang -->
+      <div id="bandInputs" class="card p-3"></div>
+
+      <!-- Input jumlah -->
+      <div class="card p-3">
+        <label for="quantity" class="form-label"
+          >Jumlah yang ingin dibeli:</label
+        >
+        <input
+          type="number"
+          id="quantity"
+          class="form-control"
+          min="1"
+          value="1"
+        />
+      </div>
+
+      <!-- Tombol dan Hasil -->
+      <button class="btn btn-custom w-100 my-2" onclick="calculateResistance()">
+        Hitung Resistansi
+      </button>
+      <div id="result" class="text-primary"></div>
+
+      <button class="btn btn-custom w-100 my-2" onclick="addToCart()">
+        Tambahkan ke Keranjang
+      </button>
+      <div id="totalPrice" class="text-success">Total Harga: Rp 0</div>
+
+      <!-- Tombol Mode Gelap -->
+      <button class="btn btn-dark-mode" onclick="toggleDarkMode()">
+        Toggle Mode Gelap
+      </button>
+    </div>
+
+    <script>
+      const colorValues = {
+        black: 0,
+        brown: 1,
+        red: 2,
+        orange: 3,
+        yellow: 4,
+        green: 5,
+        blue: 6,
+        violet: 7,
+        gray: 8,
+        white: 9,
+      };
+      const multiplierValues = {
+        black: 1,
+        brown: 10,
+        red: 100,
+        orange: 1000,
+        yellow: 10000,
+        green: 100000,
+        blue: 1000000,
+        gold: 0.1,
+        silver: 0.01,
+      };
+      const toleranceValues = {
+        brown: 1,
+        red: 2,
+        green: 0.5,
+        blue: 0.25,
+        violet: 0.1,
+        gray: 0.05,
+        gold: 5,
+        silver: 10,
+      };
+      const resistorPrices = { 3: 500, 4: 1000, 5: 1500, 6: 2000 };
+      let totalHarga = 0;
+
+      function updateBandInputs() {
+        const bandCount = parseInt(document.getElementById("bandCount").value);
+        const bandInputs = document.getElementById("bandInputs");
+        bandInputs.innerHTML = "";
+
+        for (let i = 1; i <= bandCount; i++) {
+          const label = document.createElement("label");
+          label.className = "form-label";
+          label.innerText = `Warna Gelang ${i}:`;
+
+          const select = document.createElement("select");
+          select.className = "form-select";
+          select.id = `color${i}`;
+          [
+            "black",
+            "brown",
+            "red",
+            "orange",
+            "yellow",
+            "green",
+            "blue",
+            "violet",
+            "gray",
+            "white",
+            "gold",
+            "silver",
+          ].forEach((color) => {
+            const option = document.createElement("option");
+            option.value = color;
+            option.innerText = color.charAt(0).toUpperCase() + color.slice(1);
+            select.appendChild(option);
+          });
+
+          bandInputs.appendChild(label);
+          bandInputs.appendChild(select);
+        }
+      }
+
+      function calculateResistance() {
+        const bandCount = parseInt(document.getElementById("bandCount").value);
+        let result = "";
+        let resistanceValue, tolerance, coefficient;
+
+        if (bandCount >= 3) {
+          const color1 = document.getElementById("color1").value;
+          const color2 = document.getElementById("color2").value;
+          let baseValue = colorValues[color1] * 10 + colorValues[color2];
+
+          if (bandCount >= 4) {
+            const multiplier = document.getElementById(
+              `color${bandCount === 4 ? 3 : 4}`
+            ).value;
+            resistanceValue = baseValue * multiplierValues[multiplier];
+            tolerance =
+              bandCount >= 5
+                ? toleranceValues[
+                    document.getElementById(`color${bandCount}`).value
+                  ]
+                : 20;
+            result = `Nilai resistansi: ${resistanceValue} ohm ±${tolerance}%`;
+
+            if (bandCount === 6) {
+              coefficient =
+                colorValues[document.getElementById("color6").value] * 10;
+              result += `\nKoefisien suhu: ${coefficient} ppm/°C`;
+            }
+          }
+        } else {
+          result = "Jumlah gelang tidak valid!";
+        }
+
+        document.getElementById("result").innerText = result;
+      }
+
+      function addToCart() {
+        const bandCount = parseInt(document.getElementById("bandCount").value);
+        const quantity = parseInt(document.getElementById("quantity").value);
+        const harga = resistorPrices[bandCount] * quantity;
+
+        totalHarga += harga;
+        document.getElementById(
+          "totalPrice"
+        ).innerText = `Total Harga: Rp ${totalHarga}`;
+        alert(
+          `Berhasil menambahkan ${quantity} resistor dengan ${bandCount} gelang ke keranjang!`
+        );
+      }
+
+      function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+        document.querySelector(".container").classList.toggle("dark-mode");
+        document
+          .querySelectorAll(".card")
+          .forEach((card) => card.classList.toggle("dark-mode"));
+        document
+          .querySelectorAll(".btn-custom")
+          .forEach((btn) => btn.classList.toggle("dark-mode"));
+      }
+
+      window.onload = updateBandInputs;
+    </script>
+  </body>
+</html>
